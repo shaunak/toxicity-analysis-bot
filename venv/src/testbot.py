@@ -85,9 +85,13 @@ def analyze_user_toxicity(username, limit=50):
             # print(json.dumps(response_dict, indent=2) + "\n")
             comment_json_dict = json.loads(json.dumps(response_dict, indent=2))
             # there's definitely a better way to do this ^^
-            comment_toxicity_rating = float(comment_json_dict["attributeScores"]["TOXICITY"]["summaryScore"]["value"])
+            try :
+                comment_toxicity_rating = float(comment_json_dict["attributeScores"]["TOXICITY"]["summaryScore"]["value"])
+            except KeyError:
+                print(json.dumps(response_dict, indent=2) + "\n")
+                comment_toxicity_rating = 0;
             total_toxicity = total_toxicity + comment_toxicity_rating
-        print(str(total_toxicity) + "overall toxicity over " + num_comments_analyzed + " comments")
+        print(str(total_toxicity) + "overall toxicity over " + str(num_comments_analyzed) + " comments")
         return "According to my analysis, \"" + username + "\" has an average toxicity rating of " \
                + str(total_toxicity / num_comments_analyzed) + " between all of their comments"
     except NotFound:
@@ -105,16 +109,17 @@ def testbot():
             if USERNAME != comment.author.name and keyphrase in comment.body:
                 word = comment.body.replace(keyphrase, '')  # removing the keyphrase from comment to pass to dictionary
                 target_user = re.search('\/u\/[A-Za-z0-9_-]{3,20}', word)
-                print(target_user.group(0))
-                target_username = target_user.group(0)[3:]
-                if bool(target_user) and is_a_real_user(target_username):
-                    try:
-                        reply = analyze_user_toxicity(target_username)
-                        comment.reply(reply)
-                        print('posted')
-                    except APIException:
-                        add_to_database = False
-                        print('too frequent')
+                if target_user:
+                    print(target_user.group(0))
+                    target_username = target_user.group(0)[3:]
+                    if bool(target_user) and is_a_real_user(target_username):
+                        try:
+                            reply = analyze_user_toxicity(target_username)
+                            comment.reply(reply)
+                            print('posted')
+                        except APIException:
+                            add_to_database = False
+                            print('too frequent')
         if add_to_database:
             cur.execute('INSERT INTO oldposts VALUES(?)', [cid])
             sql.commit()
