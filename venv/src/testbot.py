@@ -64,6 +64,28 @@ def analyze_user_comments(username, limit=50):
     # look for phrase and reply appropriately
 
 
+def analyze_string_toxicity(comment):
+    url = ('https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze' +
+           '?key=' + perspective_api_key)
+    data_dict = {
+        'comment': {'text': comment},
+        'languages': ['en'],
+        'requestedAttributes': {'TOXICITY': {}}
+    }
+    response = requests.post(url=url, data=json.dumps(data_dict))
+    response_dict = json.loads(response.content)
+    # print(json.dumps(response_dict, indent=2) + "\n")
+    comment_json_dict = json.loads(json.dumps(response_dict, indent=2))
+    try:
+        comment_toxicity_rating = float(
+            comment_json_dict["attributeScores"]["TOXICITY"]["summaryScore"]["value"])
+    except KeyError:
+        print(json.dumps(response_dict, indent=2) + "\n")
+        comment_toxicity_rating = 0;
+    # print(comment_toxicity_rating)
+    return comment_toxicity_rating
+
+
 def analyze_user_toxicity(username, limit=50):
     url = ('https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze' +
            '?key=' + perspective_api_key)
@@ -75,23 +97,9 @@ def analyze_user_toxicity(username, limit=50):
         comments = redditor.comments.new(limit=limit)
         for comment in comments:
             num_comments_analyzed = num_comments_analyzed + 1
-            data_dict = {
-                'comment': {'text': comment.body},
-                'languages': ['en'],
-                'requestedAttributes': {'TOXICITY': {}}
-            }
-            response = requests.post(url=url, data=json.dumps(data_dict))
-            response_dict = json.loads(response.content)
-            # print(json.dumps(response_dict, indent=2) + "\n")
-            comment_json_dict = json.loads(json.dumps(response_dict, indent=2))
-            # there's definitely a better way to do this ^^
-            try :
-                comment_toxicity_rating = float(comment_json_dict["attributeScores"]["TOXICITY"]["summaryScore"]["value"])
-            except KeyError:
-                print(json.dumps(response_dict, indent=2) + "\n")
-                comment_toxicity_rating = 0;
+            comment_toxicity_rating = analyze_string_toxicity(comment.body)
             total_toxicity = total_toxicity + comment_toxicity_rating
-        print(str(total_toxicity) + "overall toxicity over " + str(num_comments_analyzed) + " comments")
+        print(str(total_toxicity) + " overall toxicity over " + str(num_comments_analyzed) + " comments")
         return "According to my analysis, \"" + username + "\" has an average toxicity rating of " \
                + str(total_toxicity / num_comments_analyzed) + " between all of their comments"
     except NotFound:
@@ -126,3 +134,4 @@ def testbot():
 
 
 testbot()
+
