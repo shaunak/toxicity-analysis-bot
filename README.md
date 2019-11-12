@@ -3,6 +3,9 @@
 This reddit bot will read all the comments of a user, use googles Perspective API to analzye each one for toxicity, and return 
 the average score (more data to come) as a reply.
 
+Usage: !testbot /u/INSERT_USER_HERE
+You'll have to have perspective API credentials and your own reddit credentials as its a personal use script right now, but that'll change soon.
+
 
 This is a bot that is in beta. Currently is just a personal use script and will only operate on /r/bottesting.
 
