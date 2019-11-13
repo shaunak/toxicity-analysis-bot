@@ -48,7 +48,6 @@ def is_a_real_user(username):
     except NotFound:
         return False
 
-def add_comment_to_queue():
 
 
 
