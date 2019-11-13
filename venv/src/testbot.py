@@ -48,6 +48,9 @@ def is_a_real_user(username):
     except NotFound:
         return False
 
+def add_comment_to_queue():
+
+
 
 def analyze_user_comments(username, limit=50):
     num_dogs = 0
