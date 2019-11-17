@@ -1,5 +1,7 @@
 import re
 import sqlite3
+import time
+
 import enchant
 import praw
 from praw.exceptions import APIException
@@ -30,6 +32,25 @@ cur = sql.cursor()
 cur.execute('CREATE TABLE IF NOT EXISTS oldposts(ID TEXT)')
 sql.commit()
 d = enchant.Dict("en_US")
+
+
+
+def enqueue_comment(comment_id):
+    queue = open("/home/shaunak/analyzer-bot/comment_queue.txt", "r+")
+    queued_comments = queue.readlines()
+    for str in queued_comments:
+        if comment_id == str:
+            queue.close()
+            return
+
+    queue.write(comment_id)
+
+def dequeue():
+    queue = open("/home/shaunak/analyzer-bot/comment_queue.txt", "r+")
+    queue.read(0)
+    
+
+
 
 
 def is_word(word):
@@ -110,6 +131,7 @@ def analyze_user_toxicity(username, limit=50):
 
 def testbot():
     for comment in subreddit.stream.comments():
+        time.sleep(20)
         add_to_database = True
         cid = comment.id
         cur.execute('SELECT * FROM oldposts WHERE ID=?', [cid])
@@ -135,5 +157,5 @@ def testbot():
             sql.commit()
 
 
-testbot()
-
+#testbot()
+enqueue_comment("lamo")
