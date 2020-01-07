@@ -1,4 +1,4 @@
-# toxcicity_analysis_bot
+# toxicity_analysis_bot
 
 This reddit bot will read all the comments of a user, use googles Perspective API to analzye each one for toxicity, and return 
 the average score (more data to come) as a reply.
